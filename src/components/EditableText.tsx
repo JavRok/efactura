@@ -1,4 +1,5 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef } from "react";
+import { updateInvoiceField } from "../stores/invoiceStore";
 
 interface EditableTextProps {
   initialText?: string;
@@ -25,7 +26,6 @@ const EditableText: React.FC<EditableTextProps> = ({
   const [text, setText] = useState(initialText);
   const [error, setError] = useState<string | null>(null);
   const textRef = useRef<HTMLDivElement>(null);
-  const hiddenInputRef = useRef<HTMLInputElement>(null);
 
   // useEffect(() => {
   //   // Update hidden input value when text changes
@@ -84,14 +84,17 @@ const EditableText: React.FC<EditableTextProps> = ({
       setError(null);
     }
 
+    // Update global store
+    if (name) {
+      updateInvoiceField(name as any, newText);
+    }
+
     if (onTextChange) {
       onTextChange(text);
     }
 
     setText(newText);
   };
-
-  console.log("TEXT", text);
 
   // const handleInput = (e: React.FormEvent<HTMLDivElement>) => {
   //   const newText = e.currentTarget.textContent || "";
@@ -118,7 +121,6 @@ const EditableText: React.FC<EditableTextProps> = ({
     <div className={`group relative hover:bg-gray-100`}>
       {/* Hidden input for form submission */}
       <input
-        ref={hiddenInputRef}
         type="text"
         name={name}
         id={name}
