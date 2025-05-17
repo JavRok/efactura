@@ -1,14 +1,17 @@
 ---
 import Layout from "../layouts/Layout.astro";
 import EditableText from "../components/EditableText";
+import EditableCell from "../components/EditableCell";
+import InvoiceLines from "../components/InvoiceLines";
+import type { InvoiceLine } from "../stores/invoiceStore";
+import { getInvoiceField } from "../stores/invoiceStore";
+
+const invoiceLines: InvoiceLine[] = getInvoiceField("invoiceLines");
 ---
 
 <Layout title="Formulario de prueba">
   <main class="min-h-screen bg-gray-100 py-8">
-    <h1
-      contenteditable="plaintext-only"
-      class="max-w-4xl mx-auto text-2xl font-bold text-gray-800 mb-3"
-    >
+    <h1 class="max-w-4xl mx-auto text-2xl font-bold text-gray-800 mb-3">
       Factura de prueba
     </h1>
     <p class="max-w-4xl mx-auto mb-6">
@@ -26,7 +29,6 @@ import EditableText from "../components/EditableText";
               <EditableText
                 client:load
                 name="invoiceNumber"
-                initialText="2023-0042"
                 maxLength={20}
                 className="px-2"
               />
@@ -40,34 +42,18 @@ import EditableText from "../components/EditableText";
       <div class="flex mb-10">
         <div class="w-1/2 pr-8">
           <h2 class="font-bold text-lg mb-2">DATOS DEL CLIENTE</h2>
-          <EditableText
-            client:load
-            name="myCompanyName"
-            initialText="Empresa Innovadora SL"
-          />
-          <EditableText
-            client:load
-            name="myCompanyEmail"
-            initialText="contacto@empresainnovadora.com"
-          />
-          <EditableText
-            client:load
-            name="myCompanyPhone"
-            initialText="634-789-0123"
-          />
-          <EditableText
-            client:load
-            name="myCompanyAddress"
-            initialText="Avenida Principal 45, 28001 Madrid"
-          />
+          <EditableText client:load name="myCompanyName" />
+          <EditableText client:load name="myCompanyEmail" />
+          <EditableText client:load name="myCompanyPhone" />
+          <EditableText client:load name="myCompanyAddress" />
         </div>
         <div class="border-l border-gray-400"></div>
         <div class="w-1/2 pl-8">
           <h2 class="font-bold text-lg mb-2">DATOS DE LA EMPRESA</h2>
-          <p>Servicios Digitales XYZ</p>
-          <p>info@serviciosdigitalesxyz.es</p>
-          <p>912-456-7890</p>
-          <p>Calle Tecnología 78, 08005 Barcelona</p>
+          <EditableText client:load name="companyName" />
+          <EditableText client:load name="companyEmail" />
+          <EditableText client:load name="companyPhone" />
+          <EditableText client:load name="companyAddress" />
         </div>
       </div>
 
@@ -82,26 +68,69 @@ import EditableText from "../components/EditableText";
               <th class="text-center p-2">Total</th>
             </tr>
           </thead>
+
           <tbody>
-            <tr class="border-b border-gray-200">
-              <td class="p-2">Desarrollo Web Responsive</td>
-              <td class="text-center p-2">01</td>
-              <td class="text-center p-2">1.200 €</td>
-              <td class="text-center p-2">1.200 €</td>
-            </tr>
-            <tr class="border-b border-gray-200">
-              <td class="p-2">Optimización SEO</td>
-              <td class="text-center p-2">01</td>
-              <td class="text-center p-2">450 €</td>
-              <td class="text-center p-2">450 €</td>
-            </tr>
-            <tr class="border-b border-gray-200">
-              <td class="p-2">Campaña Marketing Digital</td>
-              <td class="text-center p-2">01</td>
-              <td class="text-center p-2">750 €</td>
-              <td class="text-center p-2">750 €</td>
-            </tr>
+            {
+              invoiceLines &&
+                invoiceLines.map((line, index) => (
+                  <tr class="border-b border-gray-200">
+                    <td class="p-2">
+                      <EditableCell
+                        client:load
+                        index={index}
+                        field="detail"
+                        initialValue={line.detail}
+                      />
+                    </td>
+                    <td class="text-center p-2">
+                      <EditableCell
+                        client:load
+                        index={index}
+                        field="quantity"
+                        initialValue={line.quantity}
+                      />
+                    </td>
+                    <td class="text-center p-2">
+                      <EditableCell
+                        client:load
+                        index={index}
+                        field="unitPrice"
+                        initialValue={line.unitPrice}
+                      />
+                    </td>
+                    <td class="text-center p-2">
+                      <EditableCell
+                        client:load
+                        index={index}
+                        field="totalPrice"
+                        initialValue={line.totalPrice}
+                      />
+                    </td>
+                  </tr>
+                ))
+            }
           </tbody>
+
+          <!--<tbody>-->
+          <!--  <tr class="border-b border-gray-200">-->
+          <!--    <td class="p-2">Desarrollo Web Responsive</td>-->
+          <!--    <td class="text-center p-2">01</td>-->
+          <!--    <td class="text-center p-2">1.200 €</td>-->
+          <!--    <td class="text-center p-2">1.200 €</td>-->
+          <!--  </tr>-->
+          <!--  <tr class="border-b border-gray-200">-->
+          <!--    <td class="p-2">Optimización SEO</td>-->
+          <!--    <td class="text-center p-2">01</td>-->
+          <!--    <td class="text-center p-2">450 €</td>-->
+          <!--    <td class="text-center p-2">450 €</td>-->
+          <!--  </tr>-->
+          <!--  <tr class="border-b border-gray-200">-->
+          <!--    <td class="p-2">Campaña Marketing Digital</td>-->
+          <!--    <td class="text-center p-2">01</td>-->
+          <!--    <td class="text-center p-2">750 €</td>-->
+          <!--    <td class="text-center p-2">750 €</td>-->
+          <!--  </tr>-->
+          <!--</tbody>-->
         </table>
       </div>
 

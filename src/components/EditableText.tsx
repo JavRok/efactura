@@ -1,12 +1,13 @@
 import React, { useState, useRef } from "react";
-import { updateInvoiceField } from "../stores/invoiceStore";
+import { updateInvoiceField, getInvoiceField } from "../stores/invoiceStore";
+import type { InvoiceData } from "../stores/invoiceStore";
 
 interface EditableTextProps {
   initialText?: string;
   placeholder?: string;
   className?: string;
   onTextChange?: (text: string) => void;
-  name?: string;
+  name: keyof InvoiceData;
   required?: boolean;
   maxLength?: number;
   // id?: string;
@@ -23,7 +24,8 @@ const EditableText: React.FC<EditableTextProps> = ({
   // id
 }) => {
   // const [isEditing, setIsEditing] = useState(false);
-  const [text, setText] = useState(initialText);
+  // const text = initialText || getInvoiceField(name);
+  const [text, setText] = useState(initialText || getInvoiceField(name));
   const [error, setError] = useState<string | null>(null);
   const textRef = useRef<HTMLDivElement>(null);
 
@@ -78,7 +80,7 @@ const EditableText: React.FC<EditableTextProps> = ({
     // setIsEditing(false);
 
     // Validate on blur
-    if (required && !text) {
+    if (required && !newText) {
       setError("This field is required");
     } else {
       setError(null);
@@ -90,7 +92,7 @@ const EditableText: React.FC<EditableTextProps> = ({
     }
 
     if (onTextChange) {
-      onTextChange(text);
+      onTextChange(newText);
     }
 
     setText(newText);
