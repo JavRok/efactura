@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef } from "react";
 import { useStore } from "@nanostores/react";
 
 import { updateInvoiceField, invoiceStore } from "../stores/invoiceStore";
