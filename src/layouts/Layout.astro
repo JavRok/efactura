@@ -31,3 +31,43 @@ const { title } = Astro.props;
 		height: 100%;
 	}
 </style>
+
+<style is:global>
+  /* Your existing styles... */
+  
+  /* Print styles */
+  @media print {
+    body {
+      background-color: white !important;
+      padding: 0 !important;
+    }
+    
+    .min-h-screen {
+      min-height: auto !important;
+    }
+    
+    .bg-gray-100 {
+      background-color: white !important;
+    }
+    
+    /* Hide elements not needed in print */
+    #export-pdf, 
+    h1.text-2xl, 
+    p.mb-6,
+    .mb-6:first-of-type {
+      display: none !important;
+    }
+    
+    /* Ensure proper page breaks */
+    #invoice-form {
+      page-break-inside: avoid;
+      box-shadow: none !important;
+    }
+    
+    /* Adjust margins for print */
+    @page {
+      size: A4;
+      margin: 10mm;
+    }
+  }
+</style>
