@@ -17,6 +17,9 @@ importers:
       '@nanostores/react':
         specifier: ^1.0.0
         version: 1.0.0(nanostores@1.0.1)(react@19.1.0)
+      '@sparticuz/chromium':
+        specifier: ^133.0.0
+        version: 133.0.0
       '@tailwindcss/vite':
         specifier: ^4.1.7
         version: 4.1.7(vite@6.3.5(@types/node@22.15.18)(jiti@2.4.2)(lightningcss@1.30.1))
@@ -676,6 +679,10 @@ packages:
 
   '@shikijs/vscode-textmate@10.0.2':
     resolution: {integrity: sha512-83yeghZ2xxin3Nj8z1NMd/NCuca+gsYXswywDy5bHvwlWL8tpTQmzGeUuHd9FC3E/SBEMvzJRwWEOz5gGes9Qg==}
+
+  '@sparticuz/chromium@133.0.0':
+    resolution: {integrity: sha512-wioNxMtSxRI+Y6ymc/UFPX9lY7A1SDgBezjFITH6arwe5CONfWosNDGpgflUGYajxxGktb1k3kjJ83jWzbccBw==}
+    engines: {node: '>= 16'}
 
   '@swc/helpers@0.5.17':
     resolution: {integrity: sha512-5IKx/Y13RsYd+sauPb2x+U/xZikHjolzfuDgTAl/Tdf3Q8rslRvC19NKDLgAJQ6wsqADk10ntlv08nPFw/gO/A==}
@@ -1540,6 +1547,15 @@ packages:
 
   fn.name@1.1.0:
     resolution: {integrity: sha512-GRnmB5gPyJpAhTQdSZTSp9uaPSvl09KoYcMQtsB9rQoOmzs9dH6ffeccH+Z+cv6P68Hu5bC6JjRh4Ah/mHSNRw==}
+
+  follow-redirects@1.15.9:
+    resolution: {integrity: sha512-gew4GsXizNgdoRyqmyfMHyAmXsZDk6mHkSxZFCzW9gwlbtOW44CDtYavM+y+72qD/Vq2l550kMF52DT8fOLJqQ==}
+    engines: {node: '>=4.0'}
+    peerDependencies:
+      debug: '*'
+    peerDependenciesMeta:
+      debug:
+        optional: true
 
   fontace@0.3.0:
     resolution: {integrity: sha512-czoqATrcnxgWb/nAkfyIrRp6Q8biYj7nGnL6zfhTcX+JKKpWHFBnb8uNMw/kZr7u++3Y3wYSYoZgHkCcsuBpBg==}
@@ -3797,6 +3813,14 @@ snapshots:
 
   '@shikijs/vscode-textmate@10.0.2': {}
 
+  '@sparticuz/chromium@133.0.0':
+    dependencies:
+      follow-redirects: 1.15.9
+      tar-fs: 3.0.9
+    transitivePeerDependencies:
+      - bare-buffer
+      - debug
+
   '@swc/helpers@0.5.17':
     dependencies:
       tslib: 2.8.1
@@ -4759,6 +4783,8 @@ snapshots:
   flattie@1.1.1: {}
 
   fn.name@1.1.0: {}
+
+  follow-redirects@1.15.9: {}
 
   fontace@0.3.0:
     dependencies:

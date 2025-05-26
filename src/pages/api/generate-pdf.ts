@@ -1,6 +1,6 @@
 import type { APIRoute } from "astro";
 import puppeteer from "puppeteer-core";
-import chromium from "chrome-aws-lambda";
+import chromium from "@sparticuz/chromium";
 
 // Enable SSR endpoint
 export const prerender = false;
@@ -10,14 +10,35 @@ export const POST: APIRoute = async ({ request }) => {
     // Get the HTML content from the request
     const { html } = await request.json();
 
-    const chromeExe = import.meta.env.CHROME_EXECUTABLE_PATH;
+    // Determine if we're running on Netlify
+    const isNetlify = process.env.NETLIFY === 'true';
+    console.log('Running on Netlify:', isNetlify);
+
+    let options;
+    if (isNetlify) {
+      // On Netlify, use @sparticuz/chromium
+      options = {
+        args: chromium.args,
+        defaultViewport: chromium.defaultViewport,
+        executablePath: await chromium.executablePath(),
+        headless: chromium.headless,
+      };
+      console.log('Using Netlify Chrome configuration with @sparticuz/chromium');
+    } else {
+      // Local development
+      const chromeExe = import.meta.env.CHROME_EXECUTABLE_PATH;
+      options = {
+        executablePath: chromeExe || '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
+        args: ['--no-sandbox', '--disable-setuid-sandbox'],
+        headless: true,
+      };
+      console.log('Using local Chrome configuration');
+    }
+
+    console.log('Chrome executable path:', options.executablePath);
+    
     // Launch a headless browser
-    // const browser = await puppeteer.launch();
-    const browser = await puppeteer.launch({
-      executablePath: chromeExe || (await chromium.executablePath),
-      ...(chromeExe ? {} : {args: chromium.args}),
-      headless: true,
-    });
+    const browser = await puppeteer.launch(options);
 
     const page = await browser.newPage();
 
@@ -50,8 +71,13 @@ export const POST: APIRoute = async ({ request }) => {
       },
     });
   } catch (error) {
-    console.error("Error generating PDF:", error);
-    return new Response(JSON.stringify({ error: "Failed to generate PDF" }), {
+    console.error("Error generating PDF:", error instanceof Error ? error.message : String(error));
+    console.error("Stack trace:", error instanceof Error ? error.stack : "No stack trace");
+    
+    return new Response(JSON.stringify({ 
+      error: "Failed to generate PDF",
+      details: error instanceof Error ? error.message : String(error)
+    }), {
       status: 500,
       headers: {
         "Content-Type": "application/json",
