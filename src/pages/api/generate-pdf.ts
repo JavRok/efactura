@@ -12,7 +12,7 @@ export const POST: APIRoute = async ({ request }) => {
 
     // Determine if we're running on Netlify
     const isNetlify = import.meta.env.NETLIFY === "true";
-    console.log("Running on Netlify:", isNetlify);
+    console.log("Running on Netlify:", isNetlify, import.meta.env);
 
     let options;
     if (isNetlify) {
