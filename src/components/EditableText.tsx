@@ -88,7 +88,7 @@ const EditableText: React.FC<EditableTextProps> = ({
         // onKeyDown={handleKeyDown}
         onFocus={handleFocus}
         className={`
-          rounded transition-all duration-200
+          rounded transition-all duration-200 px-1
           ${text ? "text-gray-800" : "text-gray-500 italic"}
           ${className}
         `}

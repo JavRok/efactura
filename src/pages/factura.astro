@@ -13,11 +13,24 @@ const currencySymbol = "€";
 
 const showIncomeTax = getInvoiceField("showIncomeTax");
 const showVAT = getInvoiceField("showVAT");
+
+const todayFormatted = new Date().toLocaleDateString("es-ES", {
+  day: "2-digit",
+  month: "2-digit",
+  year: "numeric",
+});
+
+const nextMonth = new Date();
+nextMonth.setMonth(nextMonth.getMonth() + 1);
+const nextMonthFormatted = nextMonth.toLocaleDateString("es-ES", {
+  day: "2-digit",
+  month: "2-digit",
+  year: "numeric",
+});
 ---
 
 <Layout title="Formulario de prueba">
   <main class="min-h-screen bg-gray-100 py-8">
-
     <form class="max-w-4xl mx-auto">
       <h1 class="text-2xl font-bold text-gray-800 mb-3">Factura de prueba</h1>
       <p class="mb-6">
@@ -51,8 +64,17 @@ const showVAT = getInvoiceField("showVAT");
         </div>
       </div>
 
-      <div class="max-w-4xl mx-auto mb-4 flex justify-end">
-        <div id="export-pdf" class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded">
+      <div class="max-w-4xl mx-auto mb-4 flex justify-end space-x-4">
+        <div
+          id="export-xml"
+          class="bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded cursor-pointer"
+        >
+          Exportar XML
+        </div>
+        <div
+          id="export-pdf"
+          class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded cursor-pointer"
+        >
           Descargar PDF
         </div>
       </div>
@@ -80,6 +102,7 @@ const showVAT = getInvoiceField("showVAT");
                   name="invoiceDate"
                   maxLength={10}
                   className="px-2"
+                  initialText={todayFormatted}
                 />
               </div>
             </div>
@@ -92,17 +115,37 @@ const showVAT = getInvoiceField("showVAT");
           <div class="w-1/2 pr-8">
             <h2 class="font-bold text-lg mb-2">DATOS DEL CLIENTE</h2>
             <EditableText client:load name="myCompanyName" />
+            <div class="flex ml-1">
+              NIF:&nbsp;
+              <EditableText client:load name="myFiscalNumber" />
+            </div>
             <EditableText client:load name="myCompanyEmail" />
             <EditableText client:load name="myCompanyPhone" />
             <EditableText client:load name="myCompanyAddress" />
+            <div class="flex">
+              <EditableText client:load name="myCompanyPostcode" />,&nbsp;
+              <EditableText client:load name="myCompanyTown" />
+              &nbsp;(<EditableText client:load name="myCompanyProvince" />)
+            </div>
           </div>
+
           <div class="border-l border-gray-400"></div>
+
           <div class="w-1/2 pl-8">
             <h2 class="font-bold text-lg mb-2">DATOS DE LA EMPRESA</h2>
             <EditableText client:load name="companyName" />
+            <div class="flex ml-1">
+              NIF:&nbsp;
+              <EditableText client:load name="fiscalNumber" />
+            </div>
             <EditableText client:load name="companyEmail" />
             <EditableText client:load name="companyPhone" />
             <EditableText client:load name="companyAddress" />
+            <div class="flex">
+              <EditableText client:load name="companyPostcode" />,&nbsp;
+              <EditableText client:load name="companyTown" />
+              &nbsp;(<EditableText client:load name="companyProvince" />)
+            </div>
           </div>
         </div>
 
@@ -154,13 +197,13 @@ const showVAT = getInvoiceField("showVAT");
             </tr>
 
             <tr id="income-tax-row" class={showIncomeTax ? "" : "collapse"}>
-              <td class="p-2">IRPF</td>
+              <td class="p-2">Retencion</td>
               <td class="text-center p-2">
                 <EditableNumber
                   client:load
                   decimals={0}
                   min={0}
-                  max={15}
+                  max={21}
                   name="incomeTaxRate"
                   symbol="%"
                 />
@@ -195,7 +238,7 @@ const showVAT = getInvoiceField("showVAT");
           <div class="border-2 border-black p-4 w-96">
             <h2 class="font-bold text-lg mb-2">INFORMACIÓN DE PAGO</h2>
             <p>Transferencia bancaria</p>
-            <EditableText client:load name="paymentBank" />
+            <!--<EditableText client:load name="paymentBank" />-->
             <div class="flex">
               <span>Nombre:&nbsp;</span>
               <EditableText client:load name="paymentName" />
@@ -207,6 +250,15 @@ const showVAT = getInvoiceField("showVAT");
             <div class="flex">
               <span>SWIFT/BIC:&nbsp;</span>
               <EditableText client:load name="paymentSWIFT" />
+            </div>
+            <div class="flex">
+              <span>Vencimiento:&nbsp;</span>
+              <EditableText
+                client:load
+                name="paymentDue"
+                maxLength={10}
+                initialText={nextMonthFormatted}
+              />
             </div>
           </div>
         </div>
@@ -224,7 +276,7 @@ const showVAT = getInvoiceField("showVAT");
 
   <!--Example of controls using astro and plain JS instead of JSX components (just for learning purposes)-->
   <script>
-    import { updateInvoiceField } from "../stores/invoiceStore";
+    import { getInvoiceData, updateInvoiceField } from "../stores/invoiceStore";
 
     // Get the checkbox and row elements
     const showVatCheckbox = document.getElementById(
@@ -267,41 +319,48 @@ const showVAT = getInvoiceField("showVAT");
     });
 
     // PDF export functionality
-    document.getElementById('export-pdf')?.addEventListener('click', async function() {
-      // Show loading indicator
-      const exportButton = document.getElementById('export-pdf');
-      if (!exportButton) return;
+    document
+      .getElementById("export-pdf")
+      ?.addEventListener("click", async function () {
+        // Show loading indicator
+        const exportButton = document.getElementById("export-pdf");
+        if (!exportButton) return;
 
-      const originalText = exportButton.textContent || 'Descargar PDF';
-      exportButton.textContent = 'Generando PDF...';
-      exportButton.classList.add('opacity-70');
-      exportButton.style.cursor = 'wait';
+        const originalText = exportButton.textContent || "Descargar PDF";
+        exportButton.textContent = "Generando PDF...";
+        exportButton.classList.add("opacity-70");
+        exportButton.style.cursor = "wait";
 
-      try {
-        // Get the invoice element
-        const invoiceElement = document.getElementById('invoice-form');
-        if (!invoiceElement) {
-          throw new Error('No se encontró el formulario de factura.');
-        }
+        try {
+          // Get the invoice element
+          const invoiceElement = document.getElementById("invoice-form");
+          if (!invoiceElement) {
+            throw new Error("No se encontró el formulario de factura.");
+          }
 
-        // Create a clone of the invoice element to modify without affecting the original
-        const invoiceClone = invoiceElement.cloneNode(true) as HTMLElement;
+          // Create a clone of the invoice element to modify without affecting the original
+          const invoiceClone = invoiceElement.cloneNode(true) as HTMLElement;
 
-        // Process all editable fields to show their current values
-        invoiceClone.querySelectorAll('[contenteditable="true"]').forEach(el => {
-          el.setAttribute('contenteditable', 'false');
-        });
+          // Process all editable fields to show their current values
+          invoiceClone
+            .querySelectorAll('[contenteditable="true"]')
+            .forEach((el) => {
+              el.setAttribute("contenteditable", "false");
+            });
 
-        // Remove any buttons or interactive elements
-        invoiceClone.querySelectorAll('button, input[type="button"]').forEach(el => {
-          el.style.display = 'none';
-        });
+          // Remove any buttons or interactive elements
+          invoiceClone
+            .querySelectorAll('button, input[type="button"]')
+            .forEach((el) => {
+              el.style.display = "none";
+            });
 
-        // Get the PDF styles from the hidden element
-        const pdfStyle = document.getElementById('pdf-styles')?.textContent || '';
+          // Get the PDF styles from the hidden element
+          const pdfStyle =
+            document.getElementById("pdf-styles")?.textContent || "";
 
-        // Create the HTML content for the PDF
-        const htmlContent = `
+          // Create the HTML content for the PDF
+          const htmlContent = `
           <!DOCTYPE html>
           <html>
           <head>
@@ -317,42 +376,122 @@ const showVAT = getInvoiceField("showVAT");
           </html>
         `;
 
-        // Send the HTML to the server for PDF generation
-        const response = await fetch('/api/generate-pdf', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ html: htmlContent }),
-        });
+          // Send the HTML to the server for PDF generation
+          const response = await fetch("/api/generate-pdf", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ html: htmlContent }),
+          });
 
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.error || 'Error al generar el PDF');
+          if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.error || "Error al generar el PDF");
+          }
+
+          // Get the PDF blob
+          const pdfBlob = await response.blob();
+
+          // Create a download link for the PDF
+          const downloadUrl = URL.createObjectURL(pdfBlob);
+          const downloadLink = document.createElement("a");
+          downloadLink.href = downloadUrl;
+          downloadLink.download = "factura.pdf";
+          document.body.appendChild(downloadLink);
+          downloadLink.click();
+          document.body.removeChild(downloadLink);
+          URL.revokeObjectURL(downloadUrl);
+        } catch (error) {
+          console.error("Error generating PDF:", error);
+          alert(
+            error instanceof Error
+              ? error.message
+              : "Error al generar el PDF. Por favor, inténtalo de nuevo.",
+          );
+        } finally {
+          // Restore button state
+          exportButton.textContent = originalText;
+          exportButton.classList.remove("opacity-70");
+          exportButton.style.cursor = "pointer";
         }
+      });
 
-        // Get the PDF blob
-        const pdfBlob = await response.blob();
+    // XML export functionality
+    document
+      .getElementById("export-xml")
+      ?.addEventListener("click", async function () {
+        // Show loading indicator
+        const exportButton = document.getElementById("export-xml");
+        if (!exportButton) return;
 
-        // Create a download link for the PDF
-        const downloadUrl = URL.createObjectURL(pdfBlob);
-        const downloadLink = document.createElement('a');
-        downloadLink.href = downloadUrl;
-        downloadLink.download = 'factura.pdf';
-        document.body.appendChild(downloadLink);
-        downloadLink.click();
-        document.body.removeChild(downloadLink);
-        URL.revokeObjectURL(downloadUrl);
+        const originalText = exportButton.textContent || "Exportar XML";
+        exportButton.textContent = "Generando XML...";
+        exportButton.classList.add("opacity-70");
+        exportButton.style.cursor = "wait";
 
-      } catch (error) {
-        console.error('Error generating PDF:', error);
-        alert(error instanceof Error ? error.message : 'Error al generar el PDF. Por favor, inténtalo de nuevo.');
-      } finally {
-        // Restore button state
-        exportButton.textContent = originalText;
-        exportButton.classList.remove('opacity-70');
-        exportButton.style.cursor = 'pointer';
-      }
-    });
+        try {
+          // Get the current invoice data from the store
+          const invoiceData = getInvoiceData();
+
+          // Send the data to the server for XML generation
+          const response = await fetch("/api/generate-xml", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ invoice: invoiceData }),
+          });
+
+          if (!response.ok) {
+            // Try to parse error message if available
+            let errorMessage = "Error al generar el XML";
+            try {
+              const errorData = await response.json();
+              errorMessage = errorData.error || errorMessage;
+            } catch (e) {
+              // If we can't parse JSON, use the default message
+            }
+            throw new Error(errorMessage);
+          }
+
+          // Get the filename from the Content-Disposition header if available
+          let filename = `factura-${invoiceData.invoiceNumber || "export"}.xml`;
+          const contentDisposition = response.headers.get(
+            "Content-Disposition",
+          );
+          if (contentDisposition) {
+            const filenameMatch = contentDisposition.match(/filename="(.+)"/);
+            if (filenameMatch && filenameMatch[1]) {
+              filename = filenameMatch[1];
+            }
+          }
+
+          // Get the XML as a blob
+          const xmlBlob = await response.blob();
+
+          // Create a download link for the XML
+          const downloadUrl = URL.createObjectURL(xmlBlob);
+          const downloadLink = document.createElement("a");
+          downloadLink.href = downloadUrl;
+          downloadLink.download = filename;
+          document.body.appendChild(downloadLink);
+          downloadLink.click();
+          document.body.removeChild(downloadLink);
+          URL.revokeObjectURL(downloadUrl);
+        } catch (error) {
+          console.error("Error generating XML:", error);
+          alert(
+            error instanceof Error
+              ? error.message
+              : "Error al generar el XML. Por favor, inténtalo de nuevo.",
+          );
+        } finally {
+          // Restore button state
+          exportButton.textContent = originalText;
+          exportButton.classList.remove("opacity-70");
+          exportButton.style.cursor = "pointer";
+        }
+      });
   </script>
 </Layout>

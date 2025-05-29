@@ -11,14 +11,22 @@ export interface InvoiceData {
   invoiceDate: string; // DD/MM/YYYY
   // From
   myCompanyName: string;
+  myFiscalNumber: string; // NIF
   myCompanyEmail: string;
   myCompanyPhone: string;
   myCompanyAddress: string;
+  myCompanyPostcode: string;
+  myCompanyTown: string;
+  myCompanyProvince: string;
   // To
   companyName: string;
+  fiscalNumber: string;
   companyEmail: string;
   companyPhone: string;
   companyAddress: string;
+  companyPostcode: string;
+  companyTown: string;
+  companyProvince: string;
   // Products or services
   invoiceLines: InvoiceLine[];
   // Totals
@@ -31,10 +39,11 @@ export interface InvoiceData {
   subtotal: number;
   total: number;
   // Payment info
-  paymentBank: string;
+  // paymentBank: string;
   paymentName: string;
   paymentIBAN: string;
   paymentSWIFT: string;
+  paymentDue: string; // DD/MM/YYYY
 }
 
 // Default values for the invoice
@@ -42,13 +51,21 @@ export const invoiceStore = map<InvoiceData>({
   invoiceNumber: "2025-002",
   invoiceDate: "1/1/2025", // new Date().toLocaleDateString("es-ES") ??
   myCompanyName: "Empresa Innovadora SL",
+  myFiscalNumber: "12345678A",
   myCompanyEmail: "contacto@empresainnovadora.com",
   myCompanyPhone: "634-789-0123",
-  myCompanyAddress: "Avenida Principal 45, 28001 Madrid",
+  myCompanyAddress: "Avenida Principal 45",
+  myCompanyPostcode: "28001",
+  myCompanyTown: "Madrid",
+  myCompanyProvince: "Madrid",
   companyName: "Servicios Digitales XYZ",
+  fiscalNumber: "B12345678",
   companyEmail: "info@serviciosdigitalesxyz.es",
   companyPhone: "912-456-7890",
   companyAddress: "Calle Tecnología 78, 08005 Barcelona",
+  companyPostcode: "08005",
+  companyTown: "Barcelona",
+  companyProvince: "Barcelona",
   invoiceLines: [
     {
       detail: "Servicio de diseño web",
@@ -67,14 +84,15 @@ export const invoiceStore = map<InvoiceData>({
   showIncomeTax: true,
   vatRate: 21,
   vatTotal: 525,
-  incomeTaxRate: 15, // 7% or 15%
+  incomeTaxRate: 15, // 7% or 15% normally
   incomeTax: -375,
   subtotal: 2500,
   total: 2650,
-  paymentBank: "Banco Santander",
+  // paymentBank: "Banco Santander",
   paymentName: "Servicios Digitales XYZ",
   paymentIBAN: "ES91 2100 0418 4502 0005 1332",
   paymentSWIFT: "CAIXESBBXXX",
+  paymentDue: "1/2/2025",
 
   website: "WWW.SERVICIOSDIGITALESXYZ.ES",
 });
